@@ -1,0 +1,56 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Assistance Page</title>
+    <script src="https://unpkg.com/react/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white h-screen flex flex-col justify-center items-center">
+    <div id="app"></div>
+
+    <script type="text/babel">
+        function App() {
+            return (
+                <div className="text-center p-6">
+                    <img src="https://placehold.co/100x100" alt="Logo placeholder image" className="mx-auto mb-4" />
+                    <h1 className="text-4xl font-semibold mb-10">¿Cómo puedo ayudarte hoy?</h1>
+                    <div className="grid grid-cols-2 gap-8 mb-10">
+                        <div className="bg-gray-800 p-4 rounded-lg">
+                            <h2 className="text-xl font-semibold mb-2">Pantalones</h2>
+                            <p className="text-gray-400">De franela y garbardina</p>
+                        </div>
+                        <div className="bg-gray-800 p-4 rounded-lg">
+                            <h2 className="text-xl font-semibold mb-2">Faldas</h2>
+                            <p className="text-gray-400">De gabardina</p>
+                        </div>
+                        <div className="bg-gray-800 p-4 rounded-lg">
+                            <h2 className="text-xl font-semibold mb-2">Delantales</h2>
+                            <p className="text-gray-400">Con bordados a pedido</p>
+                        </div>
+                        <div className="bg-gray-800 p-4 rounded-lg">
+                            <h2 className="text-xl font-semibold mb-2">Buzos</h2>
+                            <p className="text-gray-400">Completo y bordado</p>
+                        </div>
+                    </div>
+                    <div className="flex justify-center items-center">
+                        <i className="fas fa-comment-alt text-gray-400 text-2xl"></i>
+                        <input type="text" placeholder="Mensaje ChatGPT..." className="bg-gray-800 p-4 ml-2 rounded-lg w-1/2" />
+                    </div>
+                    <p className="text-gray-400 text-xs mt-10">Xicam AI puede cometer errores. Considera verificar la información importante.</p>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('app'));
+    </script>
+</body>
+</html>
