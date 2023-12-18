@@ -103,14 +103,16 @@ app.post("/newAssistant", async (req, res) => {
 // Endpoint para enviar un nuevo mensaje
 app.post("/newMessage", async (req, res) => {
   console.log("/newMessage: Solicitud recibida para enviar un nuevo mensaje");
+  console.log("start of /newMessage", new Date().toLocaleString());
   const { message, thread_id } = req.body;
 
   try {
-    const categoryCode = await functions.handleClassifyQuestion(message);
-    console.log(
-      "/newMessage: Mensaje clasificado con el código de categoría:",
-      JSON.parse(categoryCode)
-    );
+    // funcionalidad para clasificar el mensaje, puede usarse para enviar el código de categoría al cliente y que este lo muestre en el chat (opcional)
+    // const categoryCode = await functions.handleClassifyQuestion(message);
+    // console.log(
+    //   "/newMessage: Mensaje clasificado con el código de categoría:",
+    //   categoryCode
+    // );
 
     await openAi.post(
       `https://api.openai.com/v1/threads/${thread_id}/messages`,
@@ -128,6 +130,8 @@ app.post("/newMessage", async (req, res) => {
       response.data.id
     );
     console.log("/newMessage: Respuesta procesada en segundo plano");
+    console.log("/newMessage: Respuesta del LLM:", messages.data[0].content[0]);
+    console.log("end of /newMessage", new Date().toLocaleString());
     res.status(200).json({ messages, categoryCode: 0 });
   } catch (error) {
     console.error("/newMessage: Error en el chat:", error);
