@@ -32,13 +32,13 @@ const handleCreateAssistant = async (threadId) => {
     const assistantResponse = await openAi.post(
       "https://api.openai.com/v1/assistants",
       {
-        instructions: `Eres parte del equipo de Xicam, eres un amable asistente inteligente, que habla español chileno, especializado en el área de atención al cliente y ventas. 
-           Conoces todo sobre los productos de Xicam y te encargas de prereservar productos a los clientes. 
-           Tu objetivo principal es proporcionar asistencia informativa y de ventas de manera precisa y amigable. 
-           Sólo responderás preguntas relacionadas con Xicam, enfocándote en ofrecer soluciones y recomendaciones basadas en las necesidades y consultas de los clientes. 
-           Tu enfoque estará en proporcionar respuestas claras, concisas y útiles, siempre manteniendo una actitud servicial y profesional. 
-           Nunca des respuestas de otros contexos que no sean asociados a xicam e intenta ser lo mas conciso posible y a corde a la pregunta que te hicieron. 
-           Se ha proporcionado un documento adjunto con información sobre xicam, el cual puedes utilizar para responder preguntas sobre la dirección y horarios de atención de xicam, precios y productos, atención al cliente, pre-reserva de productos y stock de productos.`,
+        instructions: `
+        Eres un asistente de Xicam especializado en atención al cliente y ventas. 
+        Tu función es proporcionar información clara y concisa sobre Xicam, enfocándote en sus productos, servicios y consultas relacionadas. Debes hablar en español chileno y limitarte a responder únicamente sobre temas relacionados con Xicam. 
+        Al responder preguntas, tu enfoque debe ser directo, conciso y al grano. Evita incluir información irrelevante o extenderte en detalles que no sean necesarios para responder directamente a la consulta realizada. 
+        No agregues referencias externas o citas en tus respuestas. Siempre mantén una actitud servicial y profesional.
+        Utiliza el documento adjunto sobre Xicam para responder preguntas específicas sobre dirección, horarios de atención, precios, productos, atención al cliente, pre-reserva y stock de productos. 
+        Evita dar respuestas vagas o genéricas; en su lugar, ofrece información precisa y relevante basada en el contenido del documento proporcionado.`,
         model: "gpt-3.5-turbo-1106",
         tools: [{ type: "retrieval" }],
         file_ids: [fileResponse.data.id],
@@ -60,19 +60,13 @@ const handleClassifyQuestion = async (question) => {
   const response = await openAi.post(
     "https://api.openai.com/v1/chat/completions",
     {
-      model: "gpt-3.5-turbo",
+      model: "gpt-3.5-turbo-1106",
       messages: [
         {
           role: "system",
           content: `
           Eres un asistente avanzado diseñado para clasificar preguntas de clientes en categorías específicas. 
-
-          Eres parte del equipo de Xicam, eres un amable asistente inteligente, que habla español chileno, especializado en el área de atención al cliente y ventas. 
-          Conoces todo sobre los productos de Xicam y te encargas de prereservar productos a los clientes. 
-          Sólo responderás preguntas relacionadas con Xicam, enfocándote en ofrecer soluciones y recomendaciones basadas en las necesidades y consultas de los clientes. 
-          Nunca des respuestas de otros contexos que no sean asociados a xicam e intenta ser lo mas conciso posible y a corde a la pregunta que te hicieron. 
           Tu habilidad principal es identificar y clasificar preguntas, independientemente de si vienen en un solo mensaje o en múltiples mensajes. 
-
           Puedes manejar una variedad de formatos de preguntas, incluyendo preguntas simples, múltiples preguntas en un mensaje, y preguntas distribuidas en varios mensajes. 
           Cada pregunta debe ser clasificada en una de las siguientes categorías:
       
@@ -82,6 +76,7 @@ const handleClassifyQuestion = async (question) => {
           4. 'Atención al Cliente'
           5. 'Pre-Reserva de Productos'
           6. 'Stock de Productos'
+          0. 'Otra'
 
           Ejemplo categoria 1: 
           "¿Dónde está ubicado Xicam?"
@@ -114,6 +109,12 @@ const handleClassifyQuestion = async (question) => {
           "¿Hay stock disponible para los pantalones de Xicam?"
           "¿Hay stock disponible para los uniformes de Xicam?"
 
+          Ejemplo categoria 0:
+          "¿Cuál es la capital de Chile?"
+          "¿Cuál es el nombre del presidente de Chile?"
+          "¿Cuál es el animal más grande del mundo?"
+          "¿Cuál es el animal más pequeño del mundo?"
+
           Por ejemplo:
           - "¿Dónde está ubicado Xicam?" debe clasificarse en la categoría 1.
           - "¿A qué hora abre Xicam?" debe clasificarse en la categoría 2.
@@ -121,7 +122,9 @@ const handleClassifyQuestion = async (question) => {
           - "¿Cómo puedo contactar a Xicam?" debe clasificarse en la categoría 4.
           - "¿Cómo reservo un producto?" debe clasificarse en la categoría 5.
           - "¿Hay stock disponible para los buzos de Xicam?" debe clasificarse en la categoría 6.
-      
+          - "¿Cuál es la capital de Chile?" debe clasificarse en la categoría 0.
+          - "¿Cuál es el nombre del presidente de Chile?" debe clasificarse en la categoría 0.
+
           Tu respuesta debe incluir la clasificación de cada pregunta, asegurándote de abordar todas las preguntas presentadas en un mensaje, así como las preguntas que se extienden en múltiples mensajes. 
           Es crucial que mantengas un seguimiento coherente y preciso de las preguntas y sus clasificaciones correspondientes.
     
@@ -154,16 +157,14 @@ const handleClassifyQuestion = async (question) => {
     }
   );
 
-  const predictedCategory = response.data.choices[0].message.content.JSON.parse(s);
+  const predictedCategory = response.data.choices[0].message.content;
 
   console.log("predictedCategory", predictedCategory);
   console.log("predictedCategory content", response.data.choices[0].message);
-
-  // console.log(`Categoría detectada: ${categoryCode}`);
   return 0;
 };
 
-async function handleResponseInBackground(thread_id, run_id) {
+const handleResponseInBackground = async (thread_id, run_id) => {
   let runStatus;
   let attempts = 0;
   const maxAttempts = 12;
@@ -194,7 +195,7 @@ async function handleResponseInBackground(thread_id, run_id) {
   if (attempts >= maxAttempts) {
     return { error: "Timeout: La respuesta del asistente tardó demasiado." };
   }
-}
+};
 
 module.exports = {
   handleCreateAssistant,

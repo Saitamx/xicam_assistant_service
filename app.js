@@ -39,14 +39,16 @@ io.on("connection", (socket) => {
 
       // Emitir la respuesta del LLM al cliente
       const llmResponse = response.data.messages.data[0].content[0].text.value;
+
       io.emit("message", {
         user: "LLM",
         message: llmResponse,
         categoryCode: response.data.categoryCode,
       });
+
       console.log("Respuesta del LLM enviada al cliente");
     } catch (error) {
-      console.error("Error comunicándose con LLM:", error);
+      console.error("Error comunicándose con LLM:", error.response.data);
     }
   });
 
@@ -57,19 +59,19 @@ io.on("connection", (socket) => {
 
 // Endpoint para crear un nuevo asistente
 app.post("/newAssistant", async (req, res) => {
-  console.log("Solicitud recibida para crear un nuevo hilo");
+  console.log("Solicitud recibida para crear un nuevo asistente e hilo");
   const { user, password } = req.body;
 
   let threadId;
   let assistantId;
 
   if (!user || !password) {
-    console.log("Error: Faltan campos requeridos en /newAssistant");
+    console.log("/newAssistant Error: Faltan campos requeridos");
     return res.status(400).json({ error: "Faltan campos requeridos." });
   }
 
   if (user !== process.env.USER || password !== process.env.PASSWORD) {
-    console.log("Error: Autenticación fallida en /newAssistant");
+    console.log("/newAssistant Error: Autenticación fallida");
     return res.status(403).json({ error: "Autenticación fallida." });
   }
 
@@ -79,48 +81,60 @@ app.post("/newAssistant", async (req, res) => {
     });
 
     threadId = resThreads.data.id;
-    console.log(`New thread created with ID: ${resThreads.data.id}`);
+    console.log(
+      `/newAssistant: New thread created with ID: ${resThreads.data.id}`
+    );
 
     assistantId = await functions.handleCreateAssistant(threadId);
-    console.log(`Nuevo asistente creado`, {
+    console.log(`/newAssistant: Nuevo asistente creado`, {
       assistantId,
       threadId,
     });
 
     res.json({ assistantId, threadId });
   } catch (error) {
-    console.error("Error creando asistente:", error);
-    res.status(500).send("Error creando asistente");
+    console.error("/newAssistant: Error creando asistente:", error.response);
+    res
+      .status(500)
+      .send("/newAssistant: Error creando asistente", error.response);
   }
 });
 
 // Endpoint para enviar un nuevo mensaje
 app.post("/newMessage", async (req, res) => {
-  console.log("Solicitud recibida para enviar un nuevo mensaje");
+  console.log("/newMessage: Solicitud recibida para enviar un nuevo mensaje");
   const { message, thread_id } = req.body;
 
   try {
     const categoryCode = await functions.handleClassifyQuestion(message);
     console.log(
-      "Mensaje clasificado con el código de categoría:",
-      categoryCode
+      "/newMessage: Mensaje clasificado con el código de categoría:",
+      JSON.parse(categoryCode)
+    );
+
+    await openAi.post(
+      `https://api.openai.com/v1/threads/${thread_id}/messages`,
+      { role: "user", content: message }
     );
 
     const response = await openAi.post(
       `https://api.openai.com/v1/threads/${thread_id}/runs`,
       { assistant_id: assistantId }
     );
-    console.log(`Ejecución iniciada con ID: ${response.data.id}`);
+    console.log(`/newMessage: Ejecución iniciada con ID: ${response.data.id}`);
 
     const messages = await functions.handleResponseInBackground(
       thread_id,
       response.data.id
     );
-    console.log("Respuesta procesada en segundo plano");
-    res.status(200);
+    console.log("/newMessage: Respuesta procesada en segundo plano");
+    res.status(200).json({ messages, categoryCode: 0 });
   } catch (error) {
-    console.error("Error en el chat:", error.response);
-    res.status(500).send("Error en el chat");
+    console.error("/newMessage: Error en el chat:", error);
+    res.status(500).send({
+      message: "/newMessage: Error en el chat",
+      error,
+    });
   }
 });
 
