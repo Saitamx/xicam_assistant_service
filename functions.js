@@ -19,7 +19,10 @@ const handleCreateAssistant = async (threadId) => {
     return assistantData.assistant_id;
   } else {
     const fileFormData = new FormData();
-    fileFormData.append("file", fs.createReadStream("knowledge.docx"));
+    fileFormData.append(
+      "file",
+      fs.createReadStream("knowledge_xicam_service.docx")
+    );
     fileFormData.append("purpose", "assistants");
 
     const fileResponse = await openAi.post(
@@ -55,6 +58,7 @@ const handleCreateAssistant = async (threadId) => {
 };
 
 const handleClassifyQuestion = async (question) => {
+  console.time("handleClassifyQuestion");
   const response = await openAi.post(
     "https://api.openai.com/v1/chat/completions",
     {
@@ -84,10 +88,12 @@ const handleClassifyQuestion = async (question) => {
 
   console.log("predictedCategory", predictedCategory);
   console.log("predictedCategory content", response.data.choices[0].message);
+  console.timeEnd("handleClassifyQuestion");
   return predictedCategory;
 };
 
 const handleResponseInBackground = async (thread_id, run_id) => {
+  console.time("handleResponseInBackground");
   let runStatus;
   let attempts = 0;
   const maxAttempts = 12;
@@ -118,6 +124,7 @@ const handleResponseInBackground = async (thread_id, run_id) => {
   if (attempts >= maxAttempts) {
     return { error: "Timeout: La respuesta del asistente tardó demasiado." };
   }
+  console.timeEnd("handleResponseInBackground");
 };
 
 module.exports = {

@@ -38,6 +38,8 @@ Set up in a `.env` file:
 - `OPENAI_API_KEY`: Your OpenAI API key.
 - `THREAD_ID`: Thread ID for OpenAI conversations.
 - `ASSISTANT_ID`: Assistant ID.
+- `USER`: User to create assistand with a little securiry.
+- `PASSWORD`: Password to create assistand with a little securiry.
 
 ## 📄 License
 

@@ -1,34 +1,140 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>w3ai</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
-</head>
-<body class="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500">
-  <div class="flex flex-col items-center justify-start min-h-screen p-4">
-    <div id="chat-section" class="bg-white p-4 rounded-xl shadow-xl w-full mb-4">
-      <div id="chat-box" class="border p-2 mb-2 overflow-y-scroll bg-gray-50 rounded h-32">
-        <!-- Los mensajes se insertarán aquí -->
-      </div>
-      <div class="flex">
-        <input id="message-input" type="text" class="flex-grow p-2 border rounded-l focus:ring focus:ring-purple-200 focus:border-transparent" placeholder="Escribe un mensaje..." />
-        <button id="send-button" class="bg-purple-600 text-white p-2 rounded-r hover:bg-purple-700 focus:outline-none">
-          Enviar
-        </button>
-      </div>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-      <div class="section bg-blue-500" id="1">
-        Datos de contacto y dirección
-      </div>
-      <div class="section bg-red-500" id="2">
-        Horario de Atención
-      </div>
-    </div>
-  </div>
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="script.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>xicam assistente</title>
+    <script src="https://unpkg.com/react/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script
+      src="https://cdn.socket.io/4.7.2/socket.io.min.js"
+      integrity="sha384-mZLF4UVrpi/QTWPA7BjNPEnkIfRFn4ZEO3Qt/HFklTJBj/gBOV8G3HcKn4NfQblz"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <style>
+      body {
+        font-family: "Open Sans", sans-serif;
+      }
+      .chat-box-expanded {
+        height: 50vh;
+        max-height: 80%;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gray-900 text-white h-screen flex flex-col justify-center items-center"
+  >
+    <div id="app"></div>
+
+    <script type="text/babel">
+      function App() {
+        const socket = io();
+        const [currentInput, setCurrentInput] = React.useState("");
+        const [messages, setMessages] = React.useState([]);
+
+        React.useEffect(() => {
+          // Función para manejar mensajes entrantes
+          const handleIncomingMessage = (data) => {
+            console.log("Mensaje recibido:", data);
+            setMessages((prevMessages) => [...prevMessages, data]);
+          };
+
+          // Suscribirse al evento "message" cuando el componente se monta
+          socket.on("message", handleIncomingMessage);
+
+          // Limpiar suscripción cuando el componente se desmonta
+          return () => {
+            socket.off("message", handleIncomingMessage);
+          };
+        }, []); // No depende de "messages"
+
+        // Función para enviar un mensaje
+        const sendMessage = () => {
+          if (currentInput.trim() !== "") {
+            socket.emit("message", { message: currentInput });
+            setCurrentInput(""); // Limpiar el input después de enviar
+          }
+        };
+
+        // Mantén un estado adicional para el input
+        const handleInputChange = (e) => {
+          setCurrentInput(e.target.value);
+        };
+
+        return (
+          <div className="text-center p-6 w-full max-w-4xl">
+            <h1 className="text-4xl font-semibold mb-10">
+              ¿Cómo puedo ayudarte hoy?
+            </h1>
+            <div
+              id="chat-section"
+              className="bg-gray-800 p-4 rounded-xl shadow-xl w-full mb-4"
+            >
+              <div
+                id="chat-box"
+                className="border p-2 mb-2 overflow-y-scroll bg-gray-700 rounded chat-box-expanded"
+              >
+                {messages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={`flex ${
+                      message.from === "user" ? "justify-end" : "justify-start"
+                    }`}
+                  >
+                    <div
+                      className={`p-2 rounded-lg ${
+                        message.from === "user"
+                          ? "bg-purple-600"
+                          : "bg-gray-600"
+                      }`}
+                    >
+                      <p className="text-sm">{message.message}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex">
+                <input
+                  id="message-input"
+                  type="text"
+                  className="flex-grow p-2 border rounded-l focus:ring focus:ring-purple-200 focus:border-transparent bg-gray-700 text-white"
+                  placeholder="Escribe un mensaje..."
+                  value={currentInput}
+                  onChange={handleInputChange}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      sendMessage();
+                    }
+                  }}
+                />
+                <button
+                  id="send-button"
+                  className="bg-purple-600 text-white p-2 rounded-r hover:bg-purple-700 focus:outline-none"
+                  onClick={sendMessage}
+                >
+                  Enviar
+                </button>
+              </div>
+            </div>
+            <p className="text-gray-400 text-xs mt-10">
+              Xicam AI puede cometer errores. Considera verificar la información
+              importante.
+            </p>
+          </div>
+        );
+      }
+
+      ReactDOM.render(<App />, document.getElementById("app"));
+    </script>
+    <script src="/socket.io/socket.io.js"></script>
+  </body>
 </html>

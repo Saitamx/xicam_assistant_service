@@ -41,7 +41,7 @@ io.on("connection", (socket) => {
       const llmResponse = response.data.messages.data[0].content[0].text.value;
 
       io.emit("message", {
-        user: "LLM",
+        user: "Xicam",
         message: llmResponse,
         categoryCode: response.data.categoryCode,
       });
@@ -103,7 +103,7 @@ app.post("/newAssistant", async (req, res) => {
 // Endpoint para enviar un nuevo mensaje
 app.post("/newMessage", async (req, res) => {
   console.log("/newMessage: Solicitud recibida para enviar un nuevo mensaje");
-  console.log("start of /newMessage", new Date().toLocaleString());
+  console.time("/newMessage");
   const { message, thread_id } = req.body;
 
   try {
@@ -131,7 +131,6 @@ app.post("/newMessage", async (req, res) => {
     );
     console.log("/newMessage: Respuesta procesada en segundo plano");
     console.log("/newMessage: Respuesta del LLM:", messages.data[0].content[0]);
-    console.log("end of /newMessage", new Date().toLocaleString());
     res.status(200).json({ messages, categoryCode: 0 });
   } catch (error) {
     console.error("/newMessage: Error en el chat:", error);
@@ -140,6 +139,7 @@ app.post("/newMessage", async (req, res) => {
       error,
     });
   }
+  console.timeEnd("/newMessage");
 });
 
 // Iniciar el servidor
