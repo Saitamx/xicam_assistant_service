@@ -55,7 +55,7 @@
           return () => {
             socket.off("message", handleIncomingMessage);
           };
-        }, []); // No depende de "messages"
+        }, []);
 
         // Función para enviar un mensaje
         const sendMessage = () => {
@@ -115,6 +115,7 @@
                       sendMessage();
                     }
                   }}
+                  autocomplete="off"
                 />
                 <button
                   id="send-button"

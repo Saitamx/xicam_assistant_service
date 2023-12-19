@@ -7,6 +7,43 @@ const {
 const path = require("path");
 require("dotenv").config();
 const fs = require("fs");
+const { default: axios } = require("axios");
+
+const fnReservation = {
+  type: "function",
+  function: {
+    name: "handleReservation",
+    description:
+      "when the user have the intention of generate a reservation y ya tiene los datos del cliente",
+    parameters: {
+      type: "object",
+      properties: {
+        client: {
+          fullName: "string",
+          email: "string",
+          phone: "string",
+        },
+      },
+      required: ["client"],
+    },
+  },
+};
+
+const tools = [{ type: "retrieval" }, fnReservation];
+
+const handleReservation = async (client) => {
+  console.time("handleReservation");
+
+  console.log("client", client);
+
+  const response = await axios.post(
+    "https://hook.us1.make.com/rapx3z79g6q44lli1erjh9woglwv9i6r",
+    client
+  );
+  console.log("handleReservation: response", response);
+  console.timeEnd("handleReservation");
+  return response.data;
+};
 
 const handleCreateAssistant = async (threadId) => {
   const assistantFilePath = path.join(__dirname, "assistant.json");
@@ -41,7 +78,7 @@ const handleCreateAssistant = async (threadId) => {
       {
         instructions: handleCreateAssistantPrompt,
         model: "gpt-3.5-turbo-1106",
-        tools: [{ type: "retrieval" }],
+        tools,
         file_ids: [fileResponse.data.id],
       }
     );
@@ -111,6 +148,31 @@ const handleResponseInBackground = async (thread_id, run_id) => {
       runStatus = statusResponse.data.status;
       if (runStatus === "completed") {
         return messagesResponse.data;
+      } else if (runStatus === "requires_action") {
+        console.log("Action required.");
+        const requiredAction =
+          statusResponse.data.required_action.submit_tool_outputs.tool_calls;
+        console.log("requiredAction", requiredAction);
+        let toolsOutputs = [];
+        for (const action of requiredAction) {
+          const funcName = action.function.name;
+          const functionArguments = JSON.parse(action.function.arguments);
+          if (funcName === "handleReservation") {
+            const output = await handleReservation(functionArguments.client);
+            toolsOutputs.push({
+              tool_call_id: action.id,
+              output: JSON.stringify(output),
+            });
+          } else {
+            console.log("Uknown function name.");
+          }
+        }
+        await openAi.post(
+          `https://api.openai.com/v1/threads/${thread_id}/runs/${run_id}/submit_tool_outputs`,
+          {
+            tool_outputs: toolsOutputs,
+          }
+        );
       }
     } catch (error) {
       console.error("Error retrieving response:", error.response.data.error);
