@@ -2,7 +2,8 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>xicam assistente</title>
+    <title>Xicam</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://unpkg.com/react/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -25,14 +26,45 @@
         font-family: "Open Sans", sans-serif;
       }
       .chat-box-expanded {
-        height: 50vh;
-        max-height: 80%;
+        height: 80vh; /* Maximizado para móviles */
+      }
+
+      @media (min-width: 1024px) {
+        .chat-box-expanded {
+          height: 50vh;
+        }
+      }
+
+      #app {
+        width: 100%;
+        max-width: 100%;
+      }
+      .description {
+        text-align: center;
+        color: #f3f4f6;
+        margin-bottom: 20px;
+      }
+      .description span {
+        display: inline-block;
+        margin: 0 10px;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+      .message {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 5px;
+      }
+      .message.user {
+        justify-content: flex-start;
+      }
+      .loading {
+        text-align: center;
+        color: #9ca3af;
       }
     </style>
   </head>
-  <body
-    class="bg-gray-900 text-white h-screen flex flex-col justify-center items-center"
-  >
+  <body class="bg-gray-900 text-white">
     <div id="app"></div>
 
     <script type="text/babel">
@@ -40,44 +72,49 @@
         const socket = io();
         const [currentInput, setCurrentInput] = React.useState("");
         const [messages, setMessages] = React.useState([]);
+        const [isLoading, setIsLoading] = React.useState(false);
 
         React.useEffect(() => {
-          // Función para manejar mensajes entrantes
           const handleIncomingMessage = (data) => {
-            console.log("Mensaje recibido:", data);
+            setIsLoading(false);
             setMessages((prevMessages) => [...prevMessages, data]);
           };
 
-          // Suscribirse al evento "message" cuando el componente se monta
           socket.on("message", handleIncomingMessage);
 
-          // Limpiar suscripción cuando el componente se desmonta
           return () => {
             socket.off("message", handleIncomingMessage);
           };
         }, []);
 
-        // Función para enviar un mensaje
         const sendMessage = () => {
           if (currentInput.trim() !== "") {
-            socket.emit("message", { message: currentInput });
-            setCurrentInput(""); // Limpiar el input después de enviar
+            setIsLoading(true);
+            socket.emit("message", { message: currentInput, from: "user" });
+            setMessages((prevMessages) => [
+              ...prevMessages,
+              { message: currentInput, from: "user" },
+            ]);
+            setCurrentInput("");
           }
         };
 
-        // Mantén un estado adicional para el input
         const handleInputChange = (e) => {
           setCurrentInput(e.target.value);
         };
 
         return (
-          <div className="text-center p-6 w-full max-w-4xl">
-            <h1 className="text-4xl font-semibold mb-10">
-              ¿Cómo puedo ayudarte hoy?
-            </h1>
+          <div className="flex flex-col h-screen justify-center items-center">
+            <h2 className="text-2xl font-semibold mb-2">
+              ¿En qué puedo ayudarte?
+            </h2>
+            <p className="mb-4">
+              Primera tienda de vestuario potenciada por inteligencia
+              artificial. Todo el flujo de atención puede ser gestionado aquí.
+            </p>
             <div
               id="chat-section"
-              className="bg-gray-800 p-4 rounded-xl shadow-xl w-full mb-4"
+              className="bg-gray-800 p-4 rounded-xl shadow-xl w-full"
             >
               <div
                 id="chat-box"
@@ -86,8 +123,8 @@
                 {messages.map((message, index) => (
                   <div
                     key={index}
-                    className={`flex ${
-                      message.from === "user" ? "justify-end" : "justify-start"
+                    className={`message ${
+                      message.from === "user" ? "user" : ""
                     }`}
                   >
                     <div
@@ -101,6 +138,9 @@
                     </div>
                   </div>
                 ))}
+                {isLoading && (
+                  <div className="loading">Cargando respuesta...</div>
+                )}
               </div>
               <div className="flex">
                 <input
@@ -126,10 +166,6 @@
                 </button>
               </div>
             </div>
-            <p className="text-gray-400 text-xs mt-10">
-              Xicam AI puede cometer errores. Considera verificar la información
-              importante.
-            </p>
           </div>
         );
       }

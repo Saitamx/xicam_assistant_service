@@ -13,8 +13,10 @@ const fnReservation = {
   type: "function",
   function: {
     name: "handleReservation",
-    description:
-      "when the user have the intention of generate a reservation y ya tiene los datos del cliente",
+    description: `
+    Esta función se encarga de hacer una reserva de atención para el cliente.
+    `,
+
     parameters: {
       type: "object",
       properties: {
@@ -22,6 +24,9 @@ const fnReservation = {
           fullName: "string",
           email: "string",
           phone: "string",
+          avaliableTime: "string",
+          avaliableDays: "string",
+          products: [{ code: "string", quantity: "number" }],
         },
       },
       required: ["client"],
@@ -33,16 +38,18 @@ const tools = [{ type: "retrieval" }, fnReservation];
 
 const handleReservation = async (client) => {
   console.time("handleReservation");
-
   console.log("client", client);
-
-  const response = await axios.post(
-    "https://hook.us1.make.com/rapx3z79g6q44lli1erjh9woglwv9i6r",
-    client
-  );
-  console.log("handleReservation: response", response);
+  try {
+    const response = await axios.post(
+      process.env.MAKE_WEBHOOK_RESERVATION,
+      client
+    );
+    console.log("handleReservation: response", response);
+    return response.data;
+  } catch (error) {
+    console.error("Error making reservation:", error.response.data.error);
+  }
   console.timeEnd("handleReservation");
-  return response.data;
 };
 
 const handleCreateAssistant = async (threadId) => {
@@ -159,12 +166,13 @@ const handleResponseInBackground = async (thread_id, run_id) => {
           const functionArguments = JSON.parse(action.function.arguments);
           if (funcName === "handleReservation") {
             const output = await handleReservation(functionArguments.client);
+            console.log("handleResponseInBackground: output", output);
             toolsOutputs.push({
               tool_call_id: action.id,
               output: JSON.stringify(output),
             });
           } else {
-            console.log("Uknown function name.");
+            console.error("Unknown function:", funcName);
           }
         }
         await openAi.post(
