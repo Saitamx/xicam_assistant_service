@@ -68,8 +68,8 @@
     <div id="app"></div>
 
     <script type="text/babel">
+      const socket = io();
       function App() {
-        const socket = io();
         const [currentInput, setCurrentInput] = React.useState("");
         const [messages, setMessages] = React.useState([]);
         const [isLoading, setIsLoading] = React.useState(false);
@@ -84,6 +84,7 @@
 
           return () => {
             socket.off("message", handleIncomingMessage);
+            socket.disconnect();
           };
         }, []);
 

@@ -1,4 +1,6 @@
+const { handleReservationSchema } = require("./utils/toolsFunctionsSchemas");
 const { openAi } = require("./utils/instances");
+const { default: axios } = require("axios");
 const FormData = require("form-data");
 const {
   handleCreateAssistantPrompt,
@@ -7,42 +9,25 @@ const {
 const path = require("path");
 require("dotenv").config();
 const fs = require("fs");
-const { default: axios } = require("axios");
 
-const fnReservation = {
-  type: "function",
-  function: {
-    name: "handleReservation",
-    description: `
-    Esta función se encarga de hacer una reserva de atención para el cliente.
-    `,
+const toolsFunctions = [handleReservationSchema];
 
-    parameters: {
-      type: "object",
-      properties: {
-        client: {
-          fullName: "string",
-          email: "string",
-          phone: "string",
-          avaliableTime: "string",
-          avaliableDays: "string",
-          products: [{ code: "string", quantity: "number" }],
-        },
-      },
-      required: ["client"],
-    },
-  },
-};
+const tools = [{ type: "retrieval" }, ...toolsFunctions];
 
-const tools = [{ type: "retrieval" }, fnReservation];
-
-const handleReservation = async (client) => {
+const handleReservation = async (functionArguments) => {
   console.time("handleReservation");
-  console.log("client", client);
+
+  let { fullName, email, phone, avaliableTime, avaliableDays } =
+    functionArguments;
+
+  if (!fullName || !email || !phone || !avaliableTime || !avaliableDays) {
+    return { error: "Faltan datos para realizar la reserva." };
+  }
+
   try {
     const response = await axios.post(
       process.env.MAKE_WEBHOOK_RESERVATION,
-      client
+      functionArguments
     );
     console.log("handleReservation: response", response);
     return response.data;
@@ -165,7 +150,7 @@ const handleResponseInBackground = async (thread_id, run_id) => {
           const funcName = action.function.name;
           const functionArguments = JSON.parse(action.function.arguments);
           if (funcName === "handleReservation") {
-            const output = await handleReservation(functionArguments.client);
+            const output = await handleReservation(functionArguments);
             console.log("handleResponseInBackground: output", output);
             toolsOutputs.push({
               tool_call_id: action.id,

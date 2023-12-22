@@ -43,7 +43,6 @@ io.on("connection", (socket) => {
       io.emit("message", {
         user: "Xicam",
         message: llmResponse,
-        categoryCode: response.data.categoryCode,
       });
 
       console.log("Respuesta del LLM enviada al cliente");
@@ -108,6 +107,7 @@ app.post("/newMessage", async (req, res) => {
 
   try {
     // funcionalidad para clasificar el mensaje, puede usarse para enviar el código de categoría al cliente y que este lo muestre en el chat (opcional)
+    // tambien puede usarse como logs
     // const categoryCode = await functions.handleClassifyQuestion(message);
     // console.log(
     //   "/newMessage: Mensaje clasificado con el código de categoría:",
@@ -129,9 +129,12 @@ app.post("/newMessage", async (req, res) => {
       thread_id,
       response.data.id
     );
-    console.log("/newMessage: Respuesta procesada en segundo plano");
-    console.log("/newMessage: Respuesta del LLM:", messages.data[0].content[0]);
-    res.status(200).json({ messages, categoryCode: 0 });
+    console.log("/newMessage: Respuesta procesada en segundo plano, mensajes", messages.map((message, i) => message.content[i].text.value));
+    console.log(
+      "/newMessage: Respuesta del LLM:",
+      messages?.data[0]?.content[0]
+    );
+    res.status(200).json({ messages });
   } catch (error) {
     console.error("/newMessage: Error en el chat:", error);
     res.status(500).send({
