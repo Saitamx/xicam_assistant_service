@@ -129,7 +129,7 @@ app.post("/newMessage", async (req, res) => {
       thread_id,
       response.data.id
     );
-    console.log("/newMessage: Respuesta procesada en segundo plano, mensajes", messages.map((message, i) => message.content[i].text.value));
+    console.log("/newMessage: Respuesta procesada en segundo plano");
     console.log(
       "/newMessage: Respuesta del LLM:",
       messages?.data[0]?.content[0]
