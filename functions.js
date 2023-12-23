@@ -1,4 +1,7 @@
-const { handleReservationSchema } = require("./utils/toolsFunctionsSchemas");
+const {
+  handleReservationSchema,
+  handleShowMapSchema,
+} = require("./utils/toolsFunctionsSchemas");
 const { openAi } = require("./utils/instances");
 const { default: axios } = require("axios");
 const FormData = require("form-data");
@@ -10,7 +13,7 @@ const path = require("path");
 require("dotenv").config();
 const fs = require("fs");
 
-const toolsFunctions = [handleReservationSchema];
+const toolsFunctions = [handleReservationSchema, handleShowMapSchema];
 
 const tools = [{ type: "retrieval" }, ...toolsFunctions];
 
@@ -29,12 +32,21 @@ const handleReservation = async (functionArguments) => {
       process.env.MAKE_WEBHOOK_RESERVATION,
       functionArguments
     );
-    console.log("handleReservation: response", response);
+    console.log("handleReservation: response", response.data);
     return response.data;
   } catch (error) {
-    console.error("Error making reservation:", error.response.data.error);
+    console.error(
+      "Error making reservation:",
+      error?.response?.data?.error || error?.response?.data || error?.response
+    );
   }
   console.timeEnd("handleReservation");
+};
+
+const handleShowMap = () => {
+  console.time("handleShowMap");
+  console.timeEnd("handleShowMap");
+  return true;
 };
 
 const handleCreateAssistant = async (threadId) => {
@@ -122,11 +134,12 @@ const handleClassifyQuestion = async (question) => {
 };
 
 const handleResponseInBackground = async (thread_id, run_id) => {
-  console.time("handleResponseInBackground");
   let runStatus;
   let attempts = 0;
-  const maxAttempts = 12;
+  const maxAttempts = 20;
   const interval = 2500;
+
+  let showMap = false;
 
   do {
     try {
@@ -139,7 +152,7 @@ const handleResponseInBackground = async (thread_id, run_id) => {
 
       runStatus = statusResponse.data.status;
       if (runStatus === "completed") {
-        return messagesResponse.data;
+        return { response: messagesResponse.data, showMap };
       } else if (runStatus === "requires_action") {
         console.log("Action required.");
         const requiredAction =
@@ -151,7 +164,15 @@ const handleResponseInBackground = async (thread_id, run_id) => {
           const functionArguments = JSON.parse(action.function.arguments);
           if (funcName === "handleReservation") {
             const output = await handleReservation(functionArguments);
-            console.log("handleResponseInBackground: output", output);
+            console.log("handleReservation: output", output);
+            toolsOutputs.push({
+              tool_call_id: action.id,
+              output: JSON.stringify(output),
+            });
+          } else if (funcName === "handleShowMap") {
+            const output = handleShowMap(functionArguments);
+            console.log("handleShowMap: output", output);
+            showMap = true;
             toolsOutputs.push({
               tool_call_id: action.id,
               output: JSON.stringify(output),
@@ -179,7 +200,6 @@ const handleResponseInBackground = async (thread_id, run_id) => {
   if (attempts >= maxAttempts) {
     return { error: "Timeout: La respuesta del asistente tardó demasiado." };
   }
-  console.timeEnd("handleResponseInBackground");
 };
 
 module.exports = {

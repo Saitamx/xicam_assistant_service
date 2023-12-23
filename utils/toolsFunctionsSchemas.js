@@ -3,7 +3,7 @@ const handleReservationSchema = {
   function: {
     name: "handleReservation",
     description: `
-          Crea una reserva de atención para el cliente.
+          Crea una reserva de atención para el cliente, se inicia solo cuando se tienen todos los datos necesarios para realizar la reserva y luego de tener la confirmación del cliente.
           `,
     parameters: {
       type: "object",
@@ -41,6 +41,22 @@ const handleReservationSchema = {
   },
 };
 
+const handleShowMapSchema = {
+  type: "function",
+  function: {
+    name: "handleShowMap",
+    description: `
+          Se inicia quiere saber la dirección de la empresa.
+          `,
+    parameters: {
+      type: "object",
+      properties: {},
+      required: [],
+    },
+  },
+};
+
 module.exports = {
   handleReservationSchema,
+  handleShowMapSchema,
 };

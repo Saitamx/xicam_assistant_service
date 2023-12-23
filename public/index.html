@@ -73,9 +73,12 @@
         const [currentInput, setCurrentInput] = React.useState("");
         const [messages, setMessages] = React.useState([]);
         const [isLoading, setIsLoading] = React.useState(false);
+        const [showMap, setShowMap] = React.useState(false);
 
         React.useEffect(() => {
           const handleIncomingMessage = (data) => {
+            console.log("data", data);
+            setShowMap(data.showMap);
             setIsLoading(false);
             setMessages((prevMessages) => [...prevMessages, data]);
           };
@@ -139,6 +142,16 @@
                     </div>
                   </div>
                 ))}
+                {showMap && (
+                  <iframe
+                    src="https://www.google.com/maps/embed?pb=!4v1703293840190!6m8!1m7!1s8CZawSARQ_UlDA7dXXZ1pw!2m2!1d-36.91023224707867!2d-73.0271924764661!3f167.49966!4f0!5f0.7820865974627469"
+                    width="600"
+                    height="450"
+                    allowfullscreen=""
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                  ></iframe>
+                )}
                 {isLoading && (
                   <div className="loading">Cargando respuesta...</div>
                 )}

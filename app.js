@@ -43,11 +43,12 @@ io.on("connection", (socket) => {
       io.emit("message", {
         user: "Xicam",
         message: llmResponse,
+        showMap: response.data.showMap,
       });
 
       console.log("Respuesta del LLM enviada al cliente");
     } catch (error) {
-      console.error("Error comunicándose con LLM:", error.response.data);
+      console.error("Error comunicándose con LLM:", error?.response?.data);
     }
   });
 
@@ -129,14 +130,18 @@ app.post("/newMessage", async (req, res) => {
       thread_id,
       response.data.id
     );
+
+    console.log("messages", messages);
+
     console.log("/newMessage: Respuesta procesada en segundo plano");
-    console.log(
-      "/newMessage: Respuesta del LLM:",
-      messages?.data[0]?.content[0]
-    );
-    res.status(200).json({ messages });
+    res
+      .status(200)
+      .json({ messages: messages.response, showMap: messages.showMap });
   } catch (error) {
-    console.error("/newMessage: Error en el chat:", error);
+    console.error(
+      "/newMessage: Error en el chat:",
+      error?.response?.data || error?.response || error
+    );
     res.status(500).send({
       message: "/newMessage: Error en el chat",
       error,
