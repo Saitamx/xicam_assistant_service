@@ -4,6 +4,23 @@ const handleReservationSchema = {
     name: "handleReservation",
     description: `
           Crea una reserva de atención para el cliente, se inicia solo cuando se tienen todos los datos necesarios para realizar la reserva y luego de tener la confirmación del cliente.
+
+          Ejemplos de preguntas:
+          Quiero una cita
+          Quiero una reserva
+          Quiero una cita para hoy
+          Quiero una reserva para hoy
+          Quiero una cita para mañana
+          Quiero una reserva para mañana
+          Quiero una cita para el lunes
+          Quiero una reserva para el lunes
+          Me gustaría una cita
+          Me gustaría una reserva
+          Me gustaría una cita para hoy¿
+          ¿Como hago una cita?
+          ¿Como hago una reserva?
+
+          Palabras clave: cita, reserva, reservar, agendar, agendar cita, agendar reserva.
           `,
     parameters: {
       type: "object",
@@ -46,7 +63,17 @@ const handleShowMapSchema = {
   function: {
     name: "handleShowMap",
     description: `
-          Se inicia quiere saber la dirección de la empresa.
+          Se inicia cuando el usuario quiere saber la dirección de la empresa.
+          Ejemplos de preguntas: 
+          ¿Dónde están ubicados?
+          ¿Cuál es su dirección?
+          ¿Dónde queda su empresa?
+          ¿Como llego a su empresa?
+          ¿Como llego a su oficina?
+          ¿Tienen una sucursal?
+          ¿Tienen una sucursal en otra ciudad?
+
+          Palabras clave: dirección, ubicación, sucursal, oficina, ciudad, llegar, mapa, google maps, googlemaps, googlemap, google map, maps, map
           `,
     parameters: {
       type: "object",
