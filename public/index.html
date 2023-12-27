@@ -103,10 +103,6 @@
           }
         };
 
-        const handleInputChange = (e) => {
-          setCurrentInput(e.target.value);
-        };
-
         return (
           <div className="flex flex-col h-screen justify-center items-center">
             <h2 className="text-2xl font-semibold mb-2">
@@ -163,7 +159,7 @@
                   className="flex-grow p-2 border rounded-l focus:ring focus:ring-purple-200 focus:border-transparent bg-gray-700 text-white"
                   placeholder="Escribe un mensaje..."
                   value={currentInput}
-                  onChange={handleInputChange}
+                  onChange={(e) => setCurrentInput(e.target.value)}
                   onKeyPress={(e) => {
                     if (e.key === "Enter") {
                       sendMessage();

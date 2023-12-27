@@ -1,6 +1,13 @@
 const { openAi } = require("./utils/instances");
 const bodyParser = require("body-parser");
-const functions = require("./functions");
+const {
+  handleCreateAssistant,
+  handleResponseInBackground,
+  handleClassifyQuestion,
+  // handleProductsInfo,
+  // handleReservation,
+  // handleGeneralInfo,
+} = require("./handlers");
 const socketIo = require("socket.io");
 const express = require("express");
 const http = require("http");
@@ -85,7 +92,7 @@ app.post("/newAssistant", async (req, res) => {
       `/newAssistant: New thread created with ID: ${resThreads.data.id}`
     );
 
-    assistantId = await functions.handleCreateAssistant(threadId);
+    assistantId = await handleCreateAssistant(threadId);
     console.log(`/newAssistant: Nuevo asistente creado`, {
       assistantId,
       threadId,
@@ -109,11 +116,11 @@ app.post("/newMessage", async (req, res) => {
   try {
     // funcionalidad para clasificar el mensaje, puede usarse para enviar el código de categoría al cliente y que este lo muestre en el chat (opcional)
     // tambien puede usarse como logs
-    // const categoryCode = await functions.handleClassifyQuestion(message);
-    // console.log(
-    //   "/newMessage: Mensaje clasificado con el código de categoría:",
-    //   categoryCode
-    // );
+    const categoryCode = await handleClassifyQuestion(message);
+    console.log(
+      "/newMessage: Mensaje clasificado con el código de categoría:",
+      categoryCode
+    );
 
     await openAi.post(
       `https://api.openai.com/v1/threads/${thread_id}/messages`,
@@ -126,12 +133,12 @@ app.post("/newMessage", async (req, res) => {
     );
     console.log(`/newMessage: Ejecución iniciada con ID: ${response.data.id}`);
 
-    const messages = await functions.handleResponseInBackground(
+    const messages = await handleResponseInBackground(
       thread_id,
       response.data.id
     );
 
-    console.log("messages", messages);
+    console.log("/newMessage: messages", messages);
 
     console.log("/newMessage: Respuesta procesada en segundo plano");
     res

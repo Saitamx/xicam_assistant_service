@@ -1,6 +1,6 @@
 {
   "name": "xicam_assistants_service",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "A backend service for handling customer inquiries using OpenAI's LLM.",
   "main": "app.js",
   "scripts": {

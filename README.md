@@ -1,46 +1,56 @@
-# 🚀 Xicam Assistants Service
+# 🚀 Servicio de Asistentes Xicam
 
-## 📜 Description
+## 📜 Descripción
 
-Xicam Assistants Service is a cutting-edge backend application, expertly crafted to interact with OpenAI's Language Model (LLM). It's designed to handle, categorize, and respond to customer inquiries with precision and efficiency. Built using Node.js, Express, and Socket.io, it offers a robust and interactive platform for seamless customer service experiences.
+El Servicio de Asistentes Xicam es una solución backend revolucionaria que integra el Modelo de Lenguaje de OpenAI. Este servicio, construido con Node.js, Express y Socket.io, se especializa en procesar y responder a consultas de clientes de forma eficiente y efectiva.
 
-## 🔧 Installation
+## 🔧 Instalación
 
-1. Clone the repository.
-2. Install dependencies: `npm install`.
+Para comenzar:
 
-## 🚀 Usage
+1. Clona el repositorio.
+2. Ejecuta `npm install` para instalar todas las dependencias.
 
-- Launch the server: `npm start`.
-- Access at `http://localhost:3000`.
+## 🚀 Uso
 
-## 💡 Key Features
+- Inicia el servidor con `npm start`.
+- Accede a la interfaz en `http://localhost:3000`.
 
-- 🌐 Real-time client communication via Socket.io.
-- 🧠 Integration with OpenAI's API for intelligent inquiry processing.
-- 📊 Structured JSON responses for categorized inquiries.
-- 🔑 Environment variables for API keys and flexible configuration.
+## 💡 Características Clave
 
-## 🌐 Endpoints
+- **Comunicación en Tiempo Real:** Utiliza Socket.io para interactuar dinámicamente con los clientes.
+- **Integración con OpenAI:** Aprovecha la API de OpenAI para un procesamiento de consultas avanzado.
+- **Respuestas JSON Estructuradas:** Facilita la organización y categorización de las respuestas de los clientes.
+- **Variables de Entorno:** Configura claves API y personaliza el servicio según tus necesidades.
+- **Gestión de Reservas:** Automatiza la reserva y recolección de datos de los clientes.
+- **Servicios de Ubicación:** Ofrece direcciones y detalles de ubicación precisos.
+- **Respuestas Asíncronas:** Maneja las consultas en segundo plano para una mayor eficiencia.
 
-- `/newAssistant`: Initiates a new assistant and thread for inquiry management.
-- `/newMessage`: Processes customer messages through OpenAI's API and returns categorized, structured responses.
+## 🌐 Puntos de Acceso
 
-## ⚙️ Custom Configuration
+- **/newAssistant:** Crea un nuevo asistente y gestiona consultas.
+- **/newMessage:** Procesa y responde a mensajes de clientes utilizando la API de OpenAI.
 
-- Developers should create their own knowledge documents.
-- Prompts need to be tailored to the specific context of each project.
+## ⚙️ Configuración Personalizada
 
-## 🌍 Environment Variables
+- Adapta los prompts para contextos de proyecto específicos.
+- Desarrolla documentos de conocimiento personalizados para mejorar la precisión.
 
-Set up in a `.env` file:
+## 🌍 Variables de Entorno
 
-- `OPENAI_API_KEY`: Your OpenAI API key.
-- `THREAD_ID`: Thread ID for OpenAI conversations.
-- `ASSISTANT_ID`: Assistant ID.
-- `USER`: User to create assistand with a little securiry.
-- `PASSWORD`: Password to create assistand with a little securiry.
+Configura las siguientes variables en un archivo `.env`:
 
-## 📄 License
+- `OPENAI_API_KEY`: Clave de API de OpenAI.
+- `THREAD_ID`: ID para las conversaciones de OpenAI.
+- `ASSISTANT_ID`: ID del asistente.
+- `USER`: Usuario para la creación del asistente.
+- `PASSWORD`: Contraseña del asistente.
 
-Under the MIT License.
+## 🔄 Registro de Cambios
+
+- **Versión 1.1:** Implementación de servicios de reserva y localización.
+- **Versión 1.0:** Lanzamiento inicial con funcionalidades básicas.
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT.
